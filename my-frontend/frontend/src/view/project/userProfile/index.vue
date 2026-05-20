@@ -7,6 +7,8 @@ import { provide } from 'vue'
 // 提供项目名称
 const name = 'User Profile'
 provide('name', name)
+const headName = '广电用户画像'
+provide('headName', headName)
 </script>
 
 <template>

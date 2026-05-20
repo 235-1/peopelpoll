@@ -1,9 +1,8 @@
-package com.xbx.back.controller;
+package com.xbx.peoplepoll.controller;
 
-import com.xbx.back.mapper.ProjectMemMapper;
-import com.xbx.back.pojo.ProjectMem;
-import com.xbx.back.pojo.Result;
-import com.xbx.back.service.ProjectMemService;
+import com.xbx.peoplepoll.pojo.ProjectMem;
+import com.xbx.peoplepoll.pojo.Result;
+import com.xbx.peoplepoll.service.ProjectMemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

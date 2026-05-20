@@ -32,5 +32,11 @@ public class Result {
         result.setMsg(msg);
         return result;
     }
+    public static Result error() {
+        Result result = new Result();
+        result.setCode(0);
+        result.setMsg("操作失败");
+        return result;
+    }
 
 }

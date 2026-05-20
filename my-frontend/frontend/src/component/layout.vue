@@ -29,7 +29,7 @@ const navigateTo = (path) => {
       <div class="project"
       v-for="item in projectList"
       :key="item.id"
-      :style="{ backgroundImage: `url('http://localhost:8080/image/logo(2).png')`
+      :style="{ backgroundImage: `url('${item.img}')`
         , backgroundSize: 'cover'
         , backgroundPosition: 'center'
         , backgroundRepeat: 'no-repeat'

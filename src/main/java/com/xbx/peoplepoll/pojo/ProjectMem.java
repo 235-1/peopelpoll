@@ -1,4 +1,4 @@
-package com.xbx.back.pojo;
+package com.xbx.peoplepoll.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

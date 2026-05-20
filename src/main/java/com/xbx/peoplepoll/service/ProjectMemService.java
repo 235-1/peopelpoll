@@ -1,9 +1,8 @@
-package com.xbx.back.service;
+package com.xbx.peoplepoll.service;
 
 
-import com.xbx.back.pojo.ProjectMem;
+import com.xbx.peoplepoll.pojo.ProjectMem;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface ProjectMemService {

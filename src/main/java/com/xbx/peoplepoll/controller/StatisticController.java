@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 
 
 /**
@@ -21,9 +22,23 @@ public class StatisticController {
     private StatisticService statisticService;
 
     // 获取统计数据
-    @GetMapping("/statistic")
+
+    @GetMapping("/statistics")
     public Result getStatisticData(){
-        Statistic data = statisticService.getStatisticData();
+        List<List<Object>> data = statisticService.getTotalStatisticData();
+        return Result.success(data);
+    }
+
+    @GetMapping("/statistics/user")
+    public Result getUserStatisticData(){
+        List<UserPost> data = statisticService.getUserStatisticData();
+        return Result.success(data);
+    }
+
+    // 请求地图热点数据
+    @GetMapping("/statistics/region")
+    public Result getRegionHotData(){
+        List<RegionHot> data = statisticService.getRegionHotData();
         return Result.success(data);
     }
 

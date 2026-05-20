@@ -7,6 +7,8 @@ import UpNavComponent from '@/component/upnav.vue'
 import FooterComponent from '@/component/footer.vue'
 import LayoutComponent from '@/component/layout.vue'
 const name = 'Home'
+const headName = 'FutureShow'
+provide('headName', headName)
 provide('name', name)
 </script>
 

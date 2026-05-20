@@ -3,6 +3,12 @@ defineOptions({
   name: 'UpNavComponent',
 })
 import dropdownList from './dropdownList.vue'
+import { inject } from 'vue'
+// 从父组件注入项目名称
+const headName = inject('headName')
+
+
+
 </script>
 
 <template>
@@ -15,7 +21,7 @@ import dropdownList from './dropdownList.vue'
           :size="60"
           src="/image/logo(2).jpg"
         />
-        <span  class="text-large"> FutureShow </span>
+        <span  class="text-large"> {{ headName }} </span>
       </div>
     </template>
 

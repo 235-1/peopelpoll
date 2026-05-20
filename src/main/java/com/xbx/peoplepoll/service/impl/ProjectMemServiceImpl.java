@@ -1,8 +1,8 @@
-package com.xbx.back.service.impl;
+package com.xbx.peoplepoll.service.impl;
 
-import com.xbx.back.mapper.ProjectMemMapper;
-import com.xbx.back.pojo.ProjectMem;
-import com.xbx.back.service.ProjectMemService;
+import com.xbx.peoplepoll.mapper.ProjectMemMapper;
+import com.xbx.peoplepoll.pojo.ProjectMem;
+import com.xbx.peoplepoll.service.ProjectMemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,14 +1,13 @@
 package com.xbx.peoplepoll.mapper;
 
-import com.xbx.peoplepoll.pojo.LabelCount;
+
+import com.xbx.peoplepoll.pojo.DayLabelRatio;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-
 import java.util.List;
 @Mapper
-public interface LabelCountMapper {
-
+public interface DayLabelRatioMapper {
     // 查询全部
-    @Select("select * from label_count")
-    List<LabelCount> selectAll();
+    @Select("select * from day_label_ratio")
+    List<DayLabelRatio> SelectAll();
 }

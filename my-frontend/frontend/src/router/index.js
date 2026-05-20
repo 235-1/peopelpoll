@@ -27,6 +27,19 @@ const router = createRouter({
       path: '/public-opinion',
       name: 'PublicOpinion',
       component: () => import('@/view/project/publicOpinion/index.vue'),
+      children: [
+        {
+          path: '/public-opinion/analysis',
+          name: 'PublicOpinionAnalysis',
+          component: () => import('@/view/statistic/weiboTotalStatistic.vue'),
+
+        },
+        {
+          path: '/public-opinion/forecast',
+          name: 'SentimentAnalysis',
+          component: () => import('@/view/statistic/SentimentStatistic.vue'),
+        },
+      ],
     },
 
   ],
