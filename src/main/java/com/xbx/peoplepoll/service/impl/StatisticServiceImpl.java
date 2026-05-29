@@ -89,7 +89,21 @@ public class StatisticServiceImpl implements StatisticService {
     // 地图热点数据
     @Override
     public List<RegionHot> getRegionHotData() {
-        // 只返回一个region  一个 hot就行
-        return regionHotMapper.selectAll();
+        List<RegionHot> list = regionHotMapper.selectAll();
+        if (list == null || list.isEmpty()) return list;
+
+        // 1. 找最大最小值
+        long max = list.stream().mapToLong(RegionHot::getCount).max().orElse(1);
+        long min = list.stream().mapToLong(RegionHot::getCount).min().orElse(0);
+
+        // 2. 归一化到 0~100，避免 max==min 时除以0
+        long range = max == min ? 1 : max - min;
+
+        list.forEach(r -> {
+            double hot = Math.round((r.getCount() - min) * 100.0 / range * 100) / 100.0;
+            r.setHot(hot);
+        });
+
+        return list;
     }
 }

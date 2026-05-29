@@ -30,7 +30,7 @@ public class PredictStatisticController {
             return Result.success(cachedData);
         }
         // 缓存失效或刚启动时，查库兜底
-        log.info("【缓存未命中】临时走数据库查询 labelCount");
+        log.info("走数据库查询 labelCount");
         List<LabelCount> labelCounts = predictStatisticService.getLabelCount();
         return Result.success(labelCounts);
     }
@@ -42,7 +42,7 @@ public class PredictStatisticController {
         if (cachedData != null) {
             return Result.success(cachedData);
         }
-        log.info("【缓存未命中】临时走数据库查询 labelCountByTime");
+        log.info("数据库查询 labelCountByTime");
         List<LabelCountByTime> labelCountByTimes = predictStatisticService.getLabelCountByTime();
         return Result.success(labelCountByTimes);
     }
@@ -54,7 +54,7 @@ public class PredictStatisticController {
         if (cachedData != null) {
             return Result.success(cachedData);
         }
-        log.info("【缓存未命中】临时走数据库查询 regionEmotion");
+        log.info("查询 regionEmotion");
         List<RegionHeatStatistic> regionHeatStatistics = predictStatisticService.getRegionHeatStatistics();
         return Result.success(regionHeatStatistics);
     }

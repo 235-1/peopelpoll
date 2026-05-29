@@ -29,7 +29,6 @@ public class StatisticController {
         if (cachedData != null) {
             return Result.success(cachedData);
         }
-        log.info("【缓存未命中】临时走数据库查询 statistics 矩阵");
         List<List<Object>> data = statisticService.getTotalStatisticData();
         return Result.success(data);
     }
@@ -40,7 +39,7 @@ public class StatisticController {
         if (cachedData != null) {
             return Result.success(cachedData);
         }
-        log.info("【缓存未命中】临时走数据库查询 userStatistics排行");
+        log.info("走数据库查询 userStatistics");
         List<UserPost> data = statisticService.getUserStatisticData();
         return Result.success(data);
     }
@@ -52,7 +51,7 @@ public class StatisticController {
         if (cachedData != null) {
             return Result.success(cachedData);
         }
-        log.info("【缓存未命中】临时走数据库查询 regionHot地图");
+        log.info("缓存未命中走数据库查询 regionHot地图");
         List<RegionHot> data = statisticService.getRegionHotData();
         return Result.success(data);
     }

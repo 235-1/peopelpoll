@@ -47,8 +47,32 @@ const maxY = computed(() => {
   return allValues.length > 0 ? Math.max(...allValues) : 100;
 });
 
+/**
+ * 【新增核心清洗逻辑】
+ * 解决粉色不对的根源：后端的 userAuthData 包含了 label 维度，直接用会导致数据重复、映射错位。
+ * 通过 computed 将其按“认证类型”进行总数累加，清洗为标准饼图所需的二维结构。
+ */
+const cleanedUserAuthData = computed(() => {
+  const raw = prop.userAuthData || [];
+  const map = {};
+
+  raw.forEach((item) => {
+    // 兼容后端 POJO 字段名，如果字段名是大写或不同请在此处对齐
+    const auth = item.userAuthentication;
+    const count = Number(item.count || 0);
+    if (auth) {
+      map[auth] = (map[auth] || 0) + count;
+    }
+  });
+
+  // 生成标准的扁平化对象数组
+  return Object.keys(map).map((key) => ({
+    "用户认证": key,
+    "数量": map[key],
+  }));
+});
+
 // 将对象数组转换为 ECharts dataset source 需要的二维数组格式
-// 例：[{name:'A', value:1}, ...] => [['name','value'],['A',1],...]
 const normalizeDataset = (raw) => {
   if (!raw || raw.length === 0) return [];
   // 已经是二维数组，直接返回
@@ -64,26 +88,34 @@ const initChart = () => {
   if (!myChart) return;
   if (!prop.data?.length || !prop.userAuthData?.length) return;
 
+  // dataset0 使用原始折线图大矩阵
   const dataset0 = normalizeDataset(prop.data);
-  const dataset1 = normalizeDataset(prop.userAuthData);
+  // dataset1 使用前端清洗合并完成后的干净认证数据
+  const dataset1 = normalizeDataset(cleanedUserAuthData.value);
 
   myChart.setOption({
     animation: true,
     progressive: 2000,
     progressiveThreshold: 5000,
-    legend: {},
+    legend: {
+      orient: "horizontal",
+      top: "5%",
+      textStyle: { color: "#fff" }
+    },
     title: [
       {
         text: "用户认证统计",
-        top: "center",
-        left: "70%",
-        textStyle: { color: "#fff" },
+        top: "45%",
+        left: "75%",
+        textAlign: "center",
+        textStyle: { color: "#fff", fontSize: 16 },
       },
       {
         text: "用户活跃度统计",
-        top: "center",
-        left: "20%",
-        textStyle: { color: "#fff" },
+        top: "45%",
+        left: "25%",
+        textAlign: "center",
+        textStyle: { color: "#fff", fontSize: 16 },
       },
     ],
     tooltip: { trigger: "axis" },
@@ -92,52 +124,59 @@ const initChart = () => {
       gridIndex: 0,
       max: maxY.value,
       splitLine: {
-        lineStyle: { color: "rgba(255,255,255,0.3)" },
+        lineStyle: { color: "rgba(255,255,255,0.1)" },
       },
     },
     grid: {
-      top: "55%",
-      bottom: "10%",
-      left: "10%",
-      right: "10%",
+      top: "50%",
+      bottom: "8%",
+      left: "8%",
+      right: "8%",
     },
     dataset: [
       { source: dataset0 },
       { source: dataset1 },
     ],
     series: [
+      // 折线图系列 (读取 datasetIndex: 0)
       { name: "个人红V",       datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
       { name: "个人金V",       datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
       { name: "个人黄V",       datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
       { name: "官方媒体(蓝V)", datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
       { name: "普通用户",      datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
       { name: "未认证用户",    datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
+
+      // 左侧饼图：联动折线图时段活跃度 (读取 datasetIndex: 0)
       {
         type: "pie",
         id: "pie",
         datasetIndex: 0,
-        radius: "30%",
+        radius: "28%",
         center: ["25%", "25%"],
         emphasis: { focus: "self" },
         label: {
           formatter: "{b}\n数量：{@1}  占比：{d}%",
           color: "#fff",
-          fontSize: 12,
+          fontSize: 11,
         },
         encode: { itemName: 0, value: 1, tooltip: 1 },
       },
+
+      // 右侧饼图：核心修正后的【用户认证统计】(读取 datasetIndex: 1)
       {
         type: "pie",
         id: "pie2",
         datasetIndex: 1,
-        radius: "30%",
+        radius: "28%",
         center: ["75%", "25%"],
         emphasis: { focus: "self" },
         label: {
+          // 由于经过 cleanedUserAuthData 重新排布，数量位于第 1 列
           formatter: "{b}\n数量：{@1}\n占比：{d}%",
           color: "#fff",
-          fontSize: 12,
+          fontSize: 11,
         },
+        // 映射对齐：itemName 映射到第 0 列(用户认证名称)，value 映射到第 1 列(合并后的数量)
         encode: { itemName: 0, value: 1, tooltip: 1 },
       },
     ],
@@ -149,28 +188,27 @@ const initChart = () => {
   }
 
   axisPointerHandler = throttle((event) => {
-  const xAxisInfo = event.axesInfo?.[0];
-  if (!xAxisInfo) return;
-  const dim = xAxisInfo.value + 1;
+    const xAxisInfo = event.axesInfo?.[0];
+    if (!xAxisInfo) return;
+    const dim = xAxisInfo.value + 1;
 
-  myChart.setOption({
-    series: [
-      {
-        id: "pie",
-        label: { formatter: `{b}\n数量：{@${dim}}  占比：{d}%` },
-        encode: { value: dim, tooltip: dim },
-      },
-      // 删掉下面的 pie2，让用户认证统计保持初始状态，不受折线图悬浮影响
-    ],
-  });
-}, 50);
+    myChart.setOption({
+      series: [
+        {
+          id: "pie",
+          label: { formatter: `{b}\n数量：{@${dim}}  占比：{d}%` },
+          encode: { value: dim, tooltip: dim },
+        },
+        // pie2 独立不参与时间联动，坚守初始饱满状态
+      ],
+    });
+  }, 50);
 
   myChart.on("updateAxisPointer", axisPointerHandler);
 };
 
 onMounted(() => {
   myChart = echarts.init(pieAndLine.value, "dark");
-  // 若数据已就绪（父组件 onMounted 里已经请求完毕），直接初始化
   if (prop.data?.length && prop.userAuthData?.length) {
     initChart();
   }
@@ -185,20 +223,18 @@ onUnmounted(() => {
   axisPointerHandler = null;
 });
 
-// 监听数据变化：数据首次到来时完整初始化；后续变化只更新 dataset + yAxis
+// 监听数据变化
 watch(
   () => [prop.data, prop.userAuthData],
   ([newData, newUserAuthData]) => {
     if (!newData?.length || !newUserAuthData?.length) return;
-    // 等 DOM/myChart 就绪再操作
     nextTick(() => {
       if (!myChart) return;
-      initChart(); // initChart 内部会做完整 setOption，幂等安全
+      initChart();
     });
   },
   { deep: true }
 );
-
 </script>
 
 <template>

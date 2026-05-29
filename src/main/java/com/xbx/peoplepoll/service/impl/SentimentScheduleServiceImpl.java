@@ -23,7 +23,7 @@ public class SentimentScheduleServiceImpl {
     private StatisticServiceImpl statisticService;
 
     // fixedRate = 360000 表示每 360,000毫秒执行一次 也就是6min
-    @Scheduled(fixedRate = 360000)
+    @Scheduled(fixedRate = 10000)
     public void refreshSentimentCache() {
         try {
             System.out.println("读取9个接口的数据");
@@ -55,7 +55,7 @@ public class SentimentScheduleServiceImpl {
             System.out.println("大屏全部 9 ");
         } catch (Exception e) {
             // 9个任务里只要有一个因为数据库写锁、锁表被卡住报错，立刻触发保护机制。
-            // 绝不执行任何 cache.put()，内存死守上一帧完好的 9 组数据
+            // 绝不执行任何 cache.put()，保存完好的 9 组数据
             System.err.println("全量清洗数据异常。。错误原因: " + e.getMessage());
         }
     }
