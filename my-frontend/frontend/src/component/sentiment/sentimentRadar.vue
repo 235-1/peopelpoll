@@ -32,9 +32,9 @@ const render = () => {
   const negative = d.find((i) => i.label === "负面");
 
   const indicator = [
-    { name: "转发", max: 250 },
-    { name: "评论", max: 250 },
-    { name: "点赞", max: 250 },
+    { name: "转发", max: 400 },
+    { name: "评论", max: 400 },
+    { name: "点赞", max: 400 },
   ];
 
   const opt = {

@@ -33,12 +33,6 @@ public class StatisticServiceImpl implements StatisticService {
             "凌晨", "早晨", "上午", "下午", "晚间", "午夜"
     );
     @Autowired
-    private DayPostCountMapper dayPostCountMapper;
-    @Autowired
-    private HourPostCountMapper hourPostCountMapper;
-    @Autowired
-    private TimePeriodCountMapper timePeriodCountMapper;
-    @Autowired
     private UserPostCountMapper userPostCountMapper;
 
     @Autowired

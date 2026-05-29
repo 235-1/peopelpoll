@@ -45,6 +45,7 @@ const props = defineProps({
 }
 
 :deep(.el-breadcrumb__inner.is-link) {
+  cursor: pointer !important;
   font-family: 'Courier New', Courier, monospace;
   color: #ffffff !important;
 }
@@ -53,6 +54,8 @@ const props = defineProps({
   color: #409eff !important;
   transition: color 0.3s ease;
 }
+
+
 
 
 
