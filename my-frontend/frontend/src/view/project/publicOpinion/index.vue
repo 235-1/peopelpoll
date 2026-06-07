@@ -21,6 +21,10 @@ const upstepList = [
     path: '/public-opinion/forecast',
     name: '情感分析',
   },
+  {
+    path: '/public-opinion/character',
+    name: '用户画像'
+  }
 ]
 </script>
 

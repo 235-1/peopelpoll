@@ -1,10 +1,14 @@
 package com.xbx.peoplepoll.utils.cache;
 
 import com.alibaba.fastjson.JSON; // 换成 Fastjson
+import com.xbx.peoplepoll.pojo.AiAnalysisDTO;
 import com.xbx.peoplepoll.utils.redisUtils.ConnectRedis;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.JedisCluster;
+
+import java.util.concurrent.TimeUnit;
+
 /**
  * 舆情大屏数据 Redis 集群缓存柜
  * @author X
@@ -18,6 +22,10 @@ public class SentimentDataCache implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         this.jedisCluster = ConnectRedis.ConnectRedisCluster();
+    }
+
+    public void put(String key, Object value, long time, TimeUnit unit) {
+        jedisCluster.setex(key, (int) unit.toSeconds(time), JSON.toJSONString(value));
     }
 
 
@@ -45,4 +53,6 @@ public class SentimentDataCache implements InitializingBean {
             return null;
         }
     }
+
+
 }

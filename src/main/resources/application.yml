@@ -12,5 +12,10 @@ mybatis:
     mapper-locations: classpath:com/xbx/mapper/*.xml
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true # 如果符合驼峰命名 规则则自动映射
+
+deepseek:
+  api-key: "sk-103431133de9419e82fa70dea439538a"
+
+
 server:
   port: 8080

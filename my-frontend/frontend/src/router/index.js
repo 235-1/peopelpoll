@@ -39,7 +39,18 @@ const router = createRouter({
           name: 'SentimentAnalysis',
           component: () => import('@/view/statistic/SentimentStatistic.vue'),
         },
+        {
+          path: '/public-opinion/character',
+          name: 'UserInfo',
+          component: () => import('@/view/statistic/userInfo.vue'),
+        }
       ],
+    },
+    /* User Profile路由 */
+    {
+      path: '/userProfileDetail',
+      name: 'UserProfileDetail',
+      component: () => import('@/view/statistic/layoutPage.vue'),
     },
 
   ],

@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
+const locale = ref(zhCn)
 
 import { onMounted, provide } from 'vue'
 /* 请求项目列表 */
@@ -22,7 +24,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <RouterView></RouterView>
+  <el-config-provider :locale="locale">
+    <RouterView></RouterView>
+  </el-config-provider>
+
 </template>
 
 <style scoped>

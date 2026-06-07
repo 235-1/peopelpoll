@@ -73,7 +73,63 @@ watch(
 </template>
 
 <style scoped>
+.total-card {
+  --el-card-bg-color: linear-gradient(135deg, #0b1528 0%, #060d1a 100%) !important;
+  --el-card-border-color: #1e293b !important;
+  text-align: center;
+  padding: 12px 10px;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
 
+:deep(.el-card__body) { padding: 0; }
+
+.card-title {
+  font-size: 15px;
+  color: #00ffcc; /* 改为炫酷荧光绿 */
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.flip-board {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.flip-item {
+  width: 46px; /* 适当收窄，使得整体紧凑精致 */
+  height: 56px;
+  background: #09101d;
+  border-radius: 6px;
+  border: 1px solid #00bfff; /* 科技蓝科技边界 */
+  box-shadow: inset 0 0 10px rgba(0, 191, 255, 0.3);
+  overflow: hidden;
+}
+
+.digital {
+  width: 100%;
+  height: 100%;
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(0, 242, 254, 0.8); /* 赋予数字LED灯发光特效 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', Courier, monospace; /* 替换为等宽电子字体 */
+}
+
+.flip {
+  animation: flip 0.4s ease-in-out;
+}
+
+@keyframes flip {
+  0% { transform: rotateX(80deg); opacity: 0.5; }
+  100% { transform: rotateX(0); opacity: 1; }
+}
 
 
 .total-card {

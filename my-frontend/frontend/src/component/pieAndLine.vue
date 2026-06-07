@@ -1,11 +1,18 @@
+<template>
+  <div class="container">
+    <div ref="pieAndLine" class="chart-box"></div>
+  </div>
+</template>
+
 <script setup>
 import * as echarts from "echarts";
 import { onMounted, onUnmounted, ref, watch, computed, nextTick } from "vue";
 
 defineOptions({
-  name: "TotalWeiboStatistic",
+  name: "PieAndLineComponent",
 });
 
+// 1. 接收父组件传入的原始行矩阵数据与认证数据
 const prop = defineProps({
   data: {
     type: Array,
@@ -17,7 +24,11 @@ const prop = defineProps({
   },
 });
 
-// leading throttle，立即执行不积压
+const pieAndLine = ref(null);
+let myChart = null;
+let axisPointerHandler = null;
+
+// 2. 领先型节流函数：确保大屏高频动态联动时不会发生严重的卡顿或堆栈溢出
 const throttle = (func, delay) => {
   let lastTime = 0;
   return function (...args) {
@@ -29,11 +40,7 @@ const throttle = (func, delay) => {
   };
 };
 
-const pieAndLine = ref(null);
-let myChart = null;
-let axisPointerHandler = null;
-
-// 计算折线图 Y 轴最大值（基于 data，二维数组格式）
+// 3. 计算折线图 Y 轴最大边界值
 const maxY = computed(() => {
   const authData = prop.data || [];
   const allValues = [];
@@ -47,17 +54,12 @@ const maxY = computed(() => {
   return allValues.length > 0 ? Math.max(...allValues) : 100;
 });
 
-/**
- * 【新增核心清洗逻辑】
- * 解决粉色不对的根源：后端的 userAuthData 包含了 label 维度，直接用会导致数据重复、映射错位。
- * 通过 computed 将其按“认证类型”进行总数累加，清洗为标准饼图所需的二维结构。
- */
+// 4. 计算属性：深度清洗合并后端的复合维度 userAuthData
 const cleanedUserAuthData = computed(() => {
   const raw = prop.userAuthData || [];
   const map = {};
 
   raw.forEach((item) => {
-    // 兼容后端 POJO 字段名，如果字段名是大写或不同请在此处对齐
     const auth = item.userAuthentication;
     const count = Number(item.count || 0);
     if (auth) {
@@ -65,124 +67,129 @@ const cleanedUserAuthData = computed(() => {
     }
   });
 
-  // 生成标准的扁平化对象数组
   return Object.keys(map).map((key) => ({
     "用户认证": key,
     "数量": map[key],
   }));
 });
 
-// 将对象数组转换为 ECharts dataset source 需要的二维数组格式
+// 5. 格式标准化：兼容处理对象数组或二维数组，转化为 dataset 所需的标准格式
 const normalizeDataset = (raw) => {
   if (!raw || raw.length === 0) return [];
-  // 已经是二维数组，直接返回
   if (Array.isArray(raw[0])) return raw;
-  // 是对象数组，转换
   const keys = Object.keys(raw[0]);
   const header = keys;
   const rows = raw.map((item) => keys.map((k) => item[k]));
   return [header, ...rows];
 };
 
+// 6. 核心初始化与样式精调函数
 const initChart = () => {
   if (!myChart) return;
   if (!prop.data?.length || !prop.userAuthData?.length) return;
 
-  // dataset0 使用原始折线图大矩阵
   const dataset0 = normalizeDataset(prop.data);
-  // dataset1 使用前端清洗合并完成后的干净认证数据
   const dataset1 = normalizeDataset(cleanedUserAuthData.value);
 
   myChart.setOption({
+    backgroundColor: "transparent", // 依托大屏半透明玻璃面板
     animation: true,
-    progressive: 2000,
-    progressiveThreshold: 5000,
     legend: {
       orient: "horizontal",
-      top: "5%",
-      textStyle: { color: "#fff" }
+      top: "2%",
+      left: "center",
+      textStyle: { color: "#a0aec0" },
+      itemGap: 15
     },
     title: [
       {
-        text: "用户认证统计",
-        top: "45%",
-        left: "75%",
-        textAlign: "center",
-        textStyle: { color: "#fff", fontSize: 16 },
+        text: "24小时时段用户活跃趋势",
+        top: "43%",
+        left: "5%",
+        textStyle: { color: "#00e5ff", fontSize: 14, fontWeight: '600' },
       },
       {
-        text: "用户活跃度统计",
-        top: "45%",
-        left: "25%",
-        textAlign: "center",
-        textStyle: { color: "#fff", fontSize: 16 },
+        text: "活跃网民认证类型构成",
+        top: "43%",
+        left: "52%",
+        textStyle: { color: "#00e5ff", fontSize: 14, fontWeight: '600' },
       },
     ],
-    tooltip: { trigger: "axis" },
-    xAxis: { type: "category" },
+    tooltip: {
+      trigger: "axis",
+      backgroundColor: "rgba(11, 19, 36, 0.9)",
+      borderColor: "#00bfff",
+      borderWidth: 1,
+      textStyle: { color: "#fff" }
+    },
+    xAxis: {
+      type: "category",
+      axisLabel: { color: "#8a99ad" },
+      axisLine: { lineStyle: { color: "#1e293b" } }
+    },
     yAxis: {
       gridIndex: 0,
       max: maxY.value,
+      axisLabel: { color: "#8a99ad" },
       splitLine: {
-        lineStyle: { color: "rgba(255,255,255,0.1)" },
+        lineStyle: { color: "rgba(255,255,255,0.05)" },
       },
     },
     grid: {
-      top: "50%",
-      bottom: "8%",
-      left: "8%",
-      right: "8%",
+      top: "52%",
+      bottom: "6%",
+      left: "6%",
+      right: "4%",
     },
+    color: ['#ff4365', '#ffbc42', '#00ffcc', '#00bfff', '#3f51b5', '#9c27b0'],
     dataset: [
       { source: dataset0 },
       { source: dataset1 },
     ],
     series: [
-      // 折线图系列 (读取 datasetIndex: 0)
-      { name: "个人红V",       datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
-      { name: "个人金V",       datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
-      { name: "个人黄V",       datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
-      { name: "官方媒体(蓝V)", datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
-      { name: "普通用户",      datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
-      { name: "未认证用户",    datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row" },
+      // 6路折线监控线
+      { name: "个人红V",      datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row", symbol: 'none' },
+      { name: "个人金V",      datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row", symbol: 'none' },
+      { name: "个人黄V",      datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row", symbol: 'none' },
+      { name: "官方媒体(蓝V)", datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row", symbol: 'none' },
+      { name: "普通用户",      datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row", symbol: 'none' },
+      { name: "未认证用户",    datasetIndex: 0, type: "line", smooth: true, seriesLayoutBy: "row", symbol: 'none' },
 
-      // 左侧饼图：联动折线图时段活跃度 (读取 datasetIndex: 0)
+      // 左上玫瑰图：时间联动
       {
         type: "pie",
         id: "pie",
         datasetIndex: 0,
-        radius: "28%",
-        center: ["25%", "25%"],
+        radius: ["0%", "30%"],
+        center: ["26%", "24%"],
+        roseType: "radius",
         emphasis: { focus: "self" },
         label: {
-          formatter: "{b}\n数量：{@1}  占比：{d}%",
-          color: "#fff",
-          fontSize: 11,
+          formatter: "{b}\n{d}%",
+          color: "#cbd5e1",
+          fontSize: 10,
         },
-        encode: { itemName: 0, value: 1, tooltip: 1 },
       },
 
-      // 右侧饼图：核心修正后的【用户认证统计】(读取 datasetIndex: 1)
+      // 右上环形图：用户类型总占比
       {
         type: "pie",
         id: "pie2",
         datasetIndex: 1,
-        radius: "28%",
-        center: ["75%", "25%"],
+        radius: ["18%", "30%"],
+        center: ["74%", "24%"],
         emphasis: { focus: "self" },
         label: {
-          // 由于经过 cleanedUserAuthData 重新排布，数量位于第 1 列
-          formatter: "{b}\n数量：{@1}\n占比：{d}%",
-          color: "#fff",
-          fontSize: 11,
+          formatter: "{b}\n{d}%",
+          color: "#cbd5e1",
+          fontSize: 10,
         },
-        // 映射对齐：itemName 映射到第 0 列(用户认证名称)，value 映射到第 1 列(合并后的数量)
         encode: { itemName: 0, value: 1, tooltip: 1 },
       },
     ],
   });
 
-  // 注册联动事件（先解绑防止重复注册）
+  // 7. 重点联动逻辑修复：安全清理并重新注册 updateAxisPointer 轴联动监听
   if (axisPointerHandler) {
     myChart.off("updateAxisPointer", axisPointerHandler);
   }
@@ -190,28 +197,33 @@ const initChart = () => {
   axisPointerHandler = throttle((event) => {
     const xAxisInfo = event.axesInfo?.[0];
     if (!xAxisInfo) return;
+    // 基于时段动态抓取当前对应的列索引
     const dim = xAxisInfo.value + 1;
 
     myChart.setOption({
       series: [
         {
           id: "pie",
-          label: { formatter: `{b}\n数量：{@${dim}}  占比：{d}%` },
+          label: { formatter: `{b}\n占比：{d}%` },
           encode: { value: dim, tooltip: dim },
         },
-        // pie2 独立不参与时间联动，坚守初始饱满状态
       ],
     });
-  }, 50);
+  }, 60);
 
   myChart.on("updateAxisPointer", axisPointerHandler);
 };
 
+// 8. 挂载与动态监测销毁
 onMounted(() => {
-  myChart = echarts.init(pieAndLine.value, "dark");
-  if (prop.data?.length && prop.userAuthData?.length) {
-    initChart();
+  if (pieAndLine.value) {
+    myChart = echarts.init(pieAndLine.value, "dark");
+    if (prop.data?.length && prop.userAuthData?.length) {
+      initChart();
+    }
   }
+
+  window.addEventListener('resize', () => myChart?.resize());
 });
 
 onUnmounted(() => {
@@ -223,13 +235,11 @@ onUnmounted(() => {
   axisPointerHandler = null;
 });
 
-// 监听数据变化
 watch(
   () => [prop.data, prop.userAuthData],
   ([newData, newUserAuthData]) => {
     if (!newData?.length || !newUserAuthData?.length) return;
     nextTick(() => {
-      if (!myChart) return;
       initChart();
     });
   },
@@ -237,18 +247,18 @@ watch(
 );
 </script>
 
-<template>
-  <div class="container">
-    <div ref="pieAndLine" class="chart-box"></div>
-  </div>
-</template>
-
 <style scoped>
 .container {
   width: 100%;
+  background: rgba(16, 24, 48, 0.6);
+  border: 1px solid #1e293b;
+  box-shadow: 0 0 20px rgba(0, 191, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  box-sizing: border-box;
 }
 .chart-box {
   width: 100%;
-  height: 800px;
+  height: 670px;
 }
 </style>
