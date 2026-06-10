@@ -29,11 +29,11 @@ const processData = (data) => {
   if (!data || data.length === 0) return []
   return data.map(item => ({
     name: item.region, // 如果接口字段不是 region，在这里对齐
-    value: item.hot || item.count || 0 // 兼容 hot 或 count 字段
+    value: item.hot  || 0 // 兼容 hot 或 count 字段
   }))
 }
 
-// 4. 定义防抖节流函数：防止父组件异步加载或定时器导致频繁刷新
+// 定义防抖节流函数：防止父组件异步加载或定时器导致频繁刷新
 const throttle = (func, delay) => {
   let lastTime = 0
   return function (...args) {
@@ -45,7 +45,7 @@ const throttle = (func, delay) => {
   }
 }
 
-// 5. 核心渲染函数：这里放置提供的暗黑风格配置
+// 核心渲染函数：这里放置提供的暗黑风格配置
 const renderChart = () => {
   if (!myChart) return
   const washedData = processData(props.mapHotData) || []

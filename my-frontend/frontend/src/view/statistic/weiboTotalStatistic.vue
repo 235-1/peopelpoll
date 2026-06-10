@@ -2,7 +2,11 @@
 import PieComponent from "@/component/pieAndLine.vue";
 import UpTotal from "@/component/upTotal.vue";
 import MapHotComponent from "@/component/mapHot.vue";
-import { getWeiboTotalStatistic, getWeiboTotalStatisticByAuth, getMapHotData } from "@/api/totalStatistic";
+import {
+  getWeiboTotalStatistic,
+  getWeiboTotalStatisticByAuth,
+  getMapHotData,
+} from "@/api/totalStatistic";
 import { onMounted, ref, onUnmounted } from "vue";
 import FooterComponent from "@/component/footer.vue";
 
@@ -27,12 +31,15 @@ const load = async () => {
 };
 
 onMounted(() => {
-  if(timer) clearInterval(timer);
+  if (timer) clearInterval(timer);
   load();
 
-  timer = setInterval(() => {
-    load();
-  }, 60000 * 3 - 100);
+  timer = setInterval(
+    () => {
+      load();
+    },
+    60000 * 5 - 100,
+  );
 });
 
 onUnmounted(() => {
@@ -43,7 +50,7 @@ onUnmounted(() => {
 <template>
   <div class="screen-bg">
     <header class="screen-header">
-      <h1 class="screen-title">全球微博网络舆情大数据整体统计中心</h1>
+      <h1 class="screen-title">微博网络舆情大数据整体统计中心</h1>
       <div class="header-line"></div>
     </header>
 

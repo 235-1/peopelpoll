@@ -45,7 +45,7 @@ const handleCurrentChange = (val) => {
   margin-top: 25px;
   margin-bottom: 15px;
 
-  /* 💡 CSS 变量重构：全面切换为大屏科技冷色调 */
+
   --el-pagination-text-color: #94a3b8 !important;       /* 总条数、前往等常规文本 */
   --el-pagination-button-color: #94a3b8 !important;     /* 翻页按钮箭头默认色 */
   --el-pagination-hover-color: #00ffcc !important;      /* 悬浮聚焦荧光绿 */
@@ -66,12 +66,11 @@ const handleCurrentChange = (val) => {
   max-width: calc(100% - 40px);
   width: fit-content;
   margin: 0 auto;
-  /* 优化：在大屏里居中或者配合 95% 宽度的表格会更好看 */
   margin-left: 5%;
 }
 
 
-/* 1. 未激活的页码、普通按钮背景与精致暗蓝边框 */
+/*  未激活的页码、普通按钮背景与精致暗蓝边框 */
 :deep(.el-pagination .el-pager li),
 :deep(.el-pagination button) {
   background-color: #101726 !important; /* 与表格行色调呼应 */
@@ -80,7 +79,7 @@ const handleCurrentChange = (val) => {
   transition: all 0.2s ease;
 }
 
-/* 2. 悬浮效果（Hover）：边缘发出淡淡的冰蓝科技微光 */
+/*  悬浮效果（Hover）：边缘发出淡淡的冰蓝科技微光 */
 :deep(.el-pagination .el-pager li:not(.is-active):hover),
 :deep(.el-pagination button:not(:disabled):hover) {
   border-color: #00bfff !important;
@@ -88,7 +87,7 @@ const handleCurrentChange = (val) => {
   box-shadow: 0 0 8px rgba(0, 191, 255, 0.2);
 }
 
-/* 3. 激活状态页码：无缝对接大屏的荧光绿/青流光效果 */
+/* 激活状态页码：无缝对接大屏的荧光绿/青流光效果 */
 :deep(.el-pagination .el-pager li.is-active) {
   background: linear-gradient(135deg, #00bfff 0%, #00ffcc 100%) !important;
   color: #050508 !important; /* 暗色文字，形成强烈对比反差，极具现代感 */
@@ -97,7 +96,7 @@ const handleCurrentChange = (val) => {
   box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
 }
 
-/* 4. 输入框、下拉框外壳（玻璃拟态微光） */
+/* 输入框、下拉框外壳（玻璃拟态微光） */
 :deep(.el-input__wrapper) {
   background-color: #101726 !important;
   box-shadow: none !important;
@@ -109,18 +108,18 @@ const handleCurrentChange = (val) => {
   box-shadow: 0 0 8px rgba(0, 255, 204, 0.2) !important;
 }
 
-/* 5. 下拉菜单及输入框内部文本 */
+/* 下拉菜单及输入框内部文本 */
 :deep(.el-pagination .el-input__inner) {
   background: transparent !important;
   color: #ffffff !important;
 }
 
-/* 6. 解决原本文字变黑看不见的问题 */
+/*  解决原本文字变黑看不见的问题 */
 :deep(.el-select__selected-item) {
   color: black !important; /* 强制选中的每页条数（如 10条/页）文字为白色 */
 }
 
-/* 7. 强制下拉小箭头和跳转文本内的文字颜色 */
+/*  强制下拉小箭头和跳转文本内的文字颜色 */
 :deep(.el-input__suffix .el-input__icon),
 :deep(.el-pagination__jump) {
   color: #94a3b8 !important;

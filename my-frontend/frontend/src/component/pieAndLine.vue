@@ -12,7 +12,7 @@ defineOptions({
   name: "PieAndLineComponent",
 });
 
-// 1. 接收父组件传入的原始行矩阵数据与认证数据
+// 接收父组件传入的原始行矩阵数据与认证数据
 const prop = defineProps({
   data: {
     type: Array,
@@ -28,7 +28,7 @@ const pieAndLine = ref(null);
 let myChart = null;
 let axisPointerHandler = null;
 
-// 2. 领先型节流函数：确保大屏高频动态联动时不会发生严重的卡顿或堆栈溢出
+// 领先型节流函数：确保大屏高频动态联动时不会发生严重的卡顿或堆栈溢出
 const throttle = (func, delay) => {
   let lastTime = 0;
   return function (...args) {
@@ -40,7 +40,7 @@ const throttle = (func, delay) => {
   };
 };
 
-// 3. 计算折线图 Y 轴最大边界值
+// 计算折线图 Y 轴最大边界值
 const maxY = computed(() => {
   const authData = prop.data || [];
   const allValues = [];
@@ -73,7 +73,7 @@ const cleanedUserAuthData = computed(() => {
   }));
 });
 
-// 5. 格式标准化：兼容处理对象数组或二维数组，转化为 dataset 所需的标准格式
+// 格式标准化：兼容处理对象数组或二维数组，转化为 dataset 所需的标准格式
 const normalizeDataset = (raw) => {
   if (!raw || raw.length === 0) return [];
   if (Array.isArray(raw[0])) return raw;
@@ -83,7 +83,7 @@ const normalizeDataset = (raw) => {
   return [header, ...rows];
 };
 
-// 6. 核心初始化与样式精调函数
+// 核心初始化与样式精调函数
 const initChart = () => {
   if (!myChart) return;
   if (!prop.data?.length || !prop.userAuthData?.length) return;
@@ -189,7 +189,7 @@ const initChart = () => {
     ],
   });
 
-  // 7. 重点联动逻辑修复：安全清理并重新注册 updateAxisPointer 轴联动监听
+  // 重点联动逻辑修复：安全清理并重新注册 updateAxisPointer 轴联动监听
   if (axisPointerHandler) {
     myChart.off("updateAxisPointer", axisPointerHandler);
   }

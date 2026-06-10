@@ -34,7 +34,7 @@ public class SentimentDataCache implements InitializingBean {
             if (value == null) return;
             // 直接转成标准的 JSON 字符串
             String jsonStr = JSON.toJSONString(value);
-            jedisCluster.setex(key, 720, jsonStr);
+            jedisCluster.setex(key, 36000, jsonStr);
         } catch (Exception e) {
             System.err.println("写入失败Key: " + key + "，原因: " + e.getMessage());
             throw new RuntimeException("Redis集群写入失败", e);

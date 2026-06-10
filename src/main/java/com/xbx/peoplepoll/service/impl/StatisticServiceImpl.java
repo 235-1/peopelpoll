@@ -100,8 +100,8 @@ public class StatisticServiceImpl implements StatisticService {
         long range = max == min ? 1 : max - min;
 
         list.forEach(r -> {
-            double hot = Math.round((r.getCount() - min) * 100.0 / range * 100) / 100.0;
-            r.setHot(hot);
+            double hot = (r.getCount() - min) * 100.0 / range;
+            r.setHot((double) Math.round(hot * 100) / 100);
         });
 
         return list;

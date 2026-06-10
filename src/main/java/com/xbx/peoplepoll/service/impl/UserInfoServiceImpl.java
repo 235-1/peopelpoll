@@ -141,8 +141,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
             if (content != null) {
                 AiAnalysisDTO dto = JSON.parseObject(content, AiAnalysisDTO.class);
-                // 这里传入 1 天，TimeUnit.DAYS
-                dataCache.put(cacheKey, dto, 1, TimeUnit.DAYS);
+                // 缓存60分支
+                dataCache.put(cacheKey, dto, 60, TimeUnit.MINUTES);
                 return dto;
             }
             return JSON.parseObject(content, AiAnalysisDTO.class);

@@ -107,7 +107,6 @@ const toPercent = (val) => {
   display: none !important;
 }
 
-/* 表头：高贵暗蓝渐变、科技白文字 */
 :deep(.el-table__header th) {
   text-align: center !important;
   background: linear-gradient(180deg, #161f30 0%, #101726 100%) !important;
@@ -145,7 +144,7 @@ const toPercent = (val) => {
   font-weight: bold;
 }
 
-/* 四种概率文本的荧光科技色 */
+
 .prob-text {
   font-family: 'Courier New', Courier, monospace;
   font-weight: bold;
@@ -155,7 +154,7 @@ const toPercent = (val) => {
 .prob-text.orange { color: #ff9f43; }
 .prob-text.neon-red { color: #ff4d4d; }
 
-/* 赛博霓虹标签样式 */
+
 .neon-tag {
   border: 1px solid transparent;
 }
@@ -163,7 +162,7 @@ const toPercent = (val) => {
 .el-tag--warning { background-color: rgba(255, 159, 67, 0.15) !important; border-color: #ff9f43 !important; color: #ff9f43 !important; }
 .el-tag--danger { background-color: rgba(255, 77, 77, 0.15) !important; border-color: #ff4d4d !important; color: #ff4d4d !important; }
 
-/* 💡 自定义类名支持：针对圈层1进行强制样式覆盖，消除 Invalid prop 报错 */
+
 .el-tag--purple,
 :deep(.cluster-purple) {
   background-color: rgba(185, 117, 255, 0.15) !important;
@@ -171,7 +170,7 @@ const toPercent = (val) => {
   color: #b975ff !important;
 }
 
-/* 炫酷的画像查询霓虹按钮 */
+
 .action-btn-neon {
   background: rgba(0, 191, 255, 0.05) !important;
   border: 1px solid #00bfff !important;

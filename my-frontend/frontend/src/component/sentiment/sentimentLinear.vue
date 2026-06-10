@@ -1,3 +1,8 @@
+<!--
+情感分析各个时段折线图
+
+-->
+
 <template>
   <div
     ref="sentimentLinear"

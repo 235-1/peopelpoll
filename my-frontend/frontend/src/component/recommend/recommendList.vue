@@ -1,5 +1,10 @@
+<!--
+用户推荐列表
+-->
+
 <template>
   <div class="rec-page">
+    <!-- 统计卡片 -->
     <el-row :gutter="12" class="stats-row">
       <el-col :span="6">
         <div class="stat-card">
@@ -11,14 +16,14 @@
       <el-col :span="6">
         <div class="stat-card">
           <div class="stat-label">地域召回</div>
-          <div class="stat-val" style="color:#1D9E75">{{ regionCount }}</div>
+          <div class="stat-val" style="color: #1d9e75">{{ regionCount }}</div>
           <div class="stat-sub">来源：region</div>
         </div>
       </el-col>
       <el-col :span="6">
         <div class="stat-card">
           <div class="stat-label">时段召回</div>
-          <div class="stat-val" style="color:#EF9F27">{{ timeCount }}</div>
+          <div class="stat-val" style="color: #ef9f27">{{ timeCount }}</div>
           <div class="stat-sub">来源：time_period</div>
         </div>
       </el-col>
@@ -31,6 +36,7 @@
       </el-col>
     </el-row>
 
+    <!-- 筛选栏 -->
     <div class="filter-bar">
       <div class="filter-group">
         <span class="filter-label">话题：</span>
@@ -47,8 +53,12 @@
           <el-radio-button label="time_period">时段</el-radio-button>
         </el-radio-group>
       </div>
+      <div class="filter-group">
+        <el-button size="small" class="reset-btn" @click="resetAllFilters">查看全部</el-button>
+      </div>
     </div>
 
+    <!-- 列表 -->
     <div v-loading="loading" element-loading-background="rgba(11,15,25,0.8)">
       <template v-if="paged.length">
         <div
@@ -66,20 +76,43 @@
               </div>
             </div>
             <div class="rec-badges">
-              <el-tag :class="['topic-tag', topicBadgeClass(item.topicLabel)]" size="small" effect="plain">
+              <el-tag
+                :class="['topic-tag', topicBadgeClass(item.topicLabel)]"
+                size="small"
+                effect="plain"
+              >
                 {{ item.topicLabel }}
               </el-tag>
-              <el-tag :class="['recall-tag', recallClass(item.recallReason)]" size="small" effect="plain">
+              <el-tag
+                :class="['recall-tag', recallClass(item.recallReason)]"
+                size="small"
+                effect="plain"
+              >
                 {{ recallLabel(item.recallReason) }}
               </el-tag>
             </div>
           </div>
 
-          <p class="rec-text">{{ item.text }}</p>
+          <p
+            :ref="
+              (el) => {
+                if (el) textRefs.set(item.weiboId, el);
+              }
+            "
+            class="rec-text"
+            :class="{ 'is-expanded': expandedItems.has(item.weiboId) }"
+          >
+            {{ item.text }}
+          </p>
 
+          <div v-if="overflowStatus.has(item.weiboId)" class="toggle-wrap">
+            <el-button type="text" class="toggle-btn" @click="toggleExpand(item.weiboId)">
+              {{ expandedItems.has(item.weiboId) ? "收起" : "查看全部" }}
+            </el-button>
+          </div>
 
           <div class="rec-footer">
-            <span class="rec-location"> {{ item.location || '全国' }}</span>
+            <span class="rec-location"> {{ item.location || "全国" }}</span>
             <div class="score-wrap">
               <span class="score-label">热度分</span>
               <div class="score-bar">
@@ -106,51 +139,85 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, watch, nextTick } from "vue";
 
 const props = defineProps({
   list: { type: Array, default: () => [] },
-  loading: { type: Boolean, default: false }
-})
+  loading: { type: Boolean, default: false },
+});
 
-const topicFilter = ref('all')
-const recallFilter = ref('all')
-const pageSize = ref(10)
-const currentPage = ref(1)
-const topics = ['政务发布', '民生服务', '公众反馈/举报', '城市问题']
+const topicFilter = ref("all");
+const recallFilter = ref("all");
+const pageSize = ref(10);
+const currentPage = ref(1);
+const topics = ["政务发布", "民生服务", "公众反馈/举报", "城市问题"];
 
-const filtered = computed(() => {
-  return props.list.filter(r => {
-    if (topicFilter.value !== 'all' && r.topicLabel !== topicFilter.value) return false
-    if (recallFilter.value !== 'all' && r.recallReason !== recallFilter.value) return false
-    return true
-  })
-})
+const expandedItems = reactive(new Set());
+const textRefs = reactive(new Map());
+const overflowStatus = reactive(new Set());
 
-const paged = computed(() => {
-  const s = (currentPage.value - 1) * pageSize.value
-  return filtered.value.slice(s, s + pageSize.value)
-})
+const toggleExpand = (id) => {
+  if (expandedItems.has(id)) expandedItems.delete(id);
+  else expandedItems.add(id);
+};
 
-const total = computed(() => props.list.length)
-const maxScore = computed(() => filtered.value.length ? Math.max(...filtered.value.map(r => r.score)) : 1)
-const regionCount = computed(() => props.list.filter(r => r.recallReason === 'region').length)
-const timeCount = computed(() => props.list.filter(r => r.recallReason === 'time_period').length)
-const topScore = computed(() => props.list.length ? Math.max(...props.list.map(r => r.score)) : 0)
+const checkOverflow = () => {
+  overflowStatus.clear();
+  nextTick(() => {
+    textRefs.forEach((el, id) => {
+      if (el && el.scrollHeight > el.offsetHeight) overflowStatus.add(id);
+    });
+  });
+};
 
-const topicBadgeClass = (label) => ({
-  '政务发布': 'badge-purple',
-  '民生服务': 'badge-teal',
-  '公众反馈/举报': 'badge-pink',
-  '城市问题': 'badge-coral',
-}[label] || 'badge-gray')
+watch([() => props.list, currentPage], checkOverflow, { immediate: true, deep: true });
 
-const recallLabel = (reason) => reason === 'region' ? '地域召回' : '时段召回'
-const recallClass = (reason) => reason === 'region' ? 'badge-cyan' : 'badge-amber'
-const avatarChar = (name) => (name || '?').charAt(0)
-const scoreBarW = (score) => Math.round(Math.min(score / maxScore.value * 100, 100))
-const isTopScore = (score) => score === topScore.value
-const handleFilterChange = () => { currentPage.value = 1 }
+const filtered = computed(() =>
+  props.list.filter(
+    (r) =>
+      (topicFilter.value === "all" || r.topicLabel === topicFilter.value) &&
+      (recallFilter.value === "all" || r.recallReason === recallFilter.value),
+  ),
+);
+
+const paged = computed(() =>
+  filtered.value.slice(
+    (currentPage.value - 1) * pageSize.value,
+    currentPage.value * pageSize.value,
+  ),
+);
+
+const total = computed(() => props.list.length);
+const maxScore = computed(() =>
+  filtered.value.length ? Math.max(...filtered.value.map((r) => r.score)) : 1,
+);
+const regionCount = computed(() => props.list.filter((r) => r.recallReason === "region").length);
+const timeCount = computed(() => props.list.filter((r) => r.recallReason === "time_period").length);
+const topScore = computed(() =>
+  props.list.length ? Math.max(...props.list.map((r) => r.score)) : 0,
+);
+
+const resetAllFilters = () => {
+  topicFilter.value = "all";
+  recallFilter.value = "all";
+  currentPage.value = 1;
+};
+const handleFilterChange = () => {
+  currentPage.value = 1;
+};
+
+const topicBadgeClass = (label) =>
+  ({
+    政务发布: "badge-purple",
+    民生服务: "badge-teal",
+    "公众反馈/举报": "badge-pink",
+    城市问题: "badge-coral",
+  })[label] || "badge-gray";
+const recallLabel = (reason) => (reason === "region" ? "地域召回" : "时段召回");
+const recallClass = (reason) => (reason === "region" ? "badge-cyan" : "badge-amber");
+const avatarChar = (name) => (name || "?").charAt(0);
+const scoreBarW = (score) => Math.round(Math.min((score / maxScore.value) * 100, 100));
+const isTopScore = (score) => score === topScore.value;
 </script>
 
 <style scoped>
@@ -160,22 +227,33 @@ const handleFilterChange = () => { currentPage.value = 1 }
   min-height: calc(100vh - 40px);
   color: #e2e8f0;
 }
-:deep(.el-breadcrumb__inner) { color: #a0aec0 !important; }
-:deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) { color: #fff !important; }
-
-/* 统计卡 */
-.stats-row { margin-bottom: 20px; }
+.stats-row {
+  margin-bottom: 20px;
+}
 .stat-card {
   background: #131a26;
   border: 1px solid #1e293b;
   border-radius: 10px;
   padding: 14px 16px;
 }
-.stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-.stat-val   { font-size: 22px; font-weight: 700; color: #00ffcc; }
-.stat-sub   { font-size: 11px; color: #475569; margin-top: 3px; }
+.stat-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.stat-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: #00ffcc;
+}
+.stat-sub {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 3px;
+}
 
-/* 筛选栏 */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -183,37 +261,47 @@ const handleFilterChange = () => { currentPage.value = 1 }
   gap: 16px;
   margin-bottom: 16px;
 }
-.filter-group { display: flex; align-items: center; gap: 8px; }
-.filter-label { font-size: 12px; color: #64748b; white-space: nowrap; }
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter-label {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
 :deep(.el-radio-button__inner) {
   background: #131a26 !important;
   border-color: #1e293b !important;
   color: #94a3b8 !important;
 }
 :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background: rgba(0,191,255,.12) !important;
+  background: rgba(0, 191, 255, 0.12) !important;
   border-color: #00bfff !important;
   color: #00bfff !important;
   box-shadow: none !important;
 }
-.refresh-btn {
-  margin-left: auto;
+
+.reset-btn {
   background: #131a26 !important;
   border-color: #1e293b !important;
   color: #94a3b8 !important;
+  margin-left: 8px;
 }
-.refresh-btn:hover { border-color: #334155 !important; color: #e2e8f0 !important; }
+.reset-btn:hover {
+  border-color: #00bfff !important;
+  color: #00bfff !important;
+}
 
-/* 推荐卡片 */
 .rec-card {
   background: #131a26;
   border: 1px solid #1e293b;
   border-radius: 10px;
   padding: 14px 16px;
   margin-bottom: 10px;
-  transition: border-color .15s;
 }
-.rec-card:hover { border-color: #334155; }
 .rec-card--top {
   border-left: 3px solid #00bfff;
   border-radius: 0 10px 10px 0;
@@ -225,52 +313,134 @@ const handleFilterChange = () => { currentPage.value = 1 }
   margin-bottom: 10px;
   gap: 12px;
 }
-.rec-author { display: flex; align-items: center; gap: 10px; }
-.avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: #1e3a4f; border: 1px solid #00bfff33;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 600; color: #00bfff; flex-shrink: 0;
+.rec-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.author-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
-.author-meta { font-size: 11px; color: #475569; margin-top: 2px; }
-.rec-badges { display: flex; gap: 6px; flex-shrink: 0; }
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #1e3a4f;
+  border: 1px solid #00bfff33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #00bfff;
+}
+.author-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.author-meta {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 2px;
+}
+.rec-badges {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
 
-/* 话题 tag */
-:deep(.topic-tag.badge-purple) { background: rgba(83,74,183,.15)  !important; border-color: #7F77DD33 !important; color: #7F77DD !important; }
-:deep(.topic-tag.badge-teal)   { background: rgba(0,158,117,.15)  !important; border-color: #1D9E7533 !important; color: #1D9E75 !important; }
-:deep(.topic-tag.badge-pink)   { background: rgba(212,83,126,.15) !important; border-color: #D4537E33 !important; color: #D4537E !important; }
-:deep(.topic-tag.badge-coral)  { background: rgba(216,90,48,.15)  !important; border-color: #D85A3033 !important; color: #D85A30 !important; }
-/* 召回 tag */
-:deep(.recall-tag.badge-cyan)  { background: rgba(0,191,255,.1)   !important; border-color: #00bfff33 !important; color: #00bfff !important; }
-:deep(.recall-tag.badge-amber) { background: rgba(186,117,23,.1)  !important; border-color: #EF9F2733 !important; color: #EF9F27 !important; }
+:deep(.topic-tag.badge-purple) {
+  background: rgba(83, 74, 183, 0.15) !important;
+  border-color: #7f77dd33 !important;
+  color: #7f77dd !important;
+}
+:deep(.topic-tag.badge-teal) {
+  background: rgba(0, 158, 117, 0.15) !important;
+  border-color: #1d9e7533 !important;
+  color: #1d9e75 !important;
+}
+:deep(.topic-tag.badge-pink) {
+  background: rgba(212, 83, 126, 0.15) !important;
+  border-color: #d4537e33 !important;
+  color: #d4537e !important;
+}
+:deep(.topic-tag.badge-coral) {
+  background: rgba(216, 90, 48, 0.15) !important;
+  border-color: #d85a3033 !important;
+  color: #d85a30 !important;
+}
+:deep(.recall-tag.badge-cyan) {
+  background: rgba(0, 191, 255, 0.1) !important;
+  border-color: #00bfff33 !important;
+  color: #00bfff !important;
+}
+:deep(.recall-tag.badge-amber) {
+  background: rgba(186, 117, 23, 0.1) !important;
+  border-color: #ef9f2733 !important;
+  color: #ef9f27 !important;
+}
 
 .rec-text {
-  font-size: 13px; color: #94a3b8; line-height: 1.65;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+}
+.rec-text.is-expanded {
+  -webkit-line-clamp: unset;
+}
+.toggle-wrap {
   margin-bottom: 10px;
 }
-.rec-footer { display: flex; align-items: center; justify-content: space-between; }
-.rec-location { font-size: 11px; color: #475569; }
-.score-wrap { display: flex; align-items: center; gap: 8px; }
-.score-label { font-size: 11px; color: #475569; }
-.score-bar {
-  width: 80px; height: 4px;
-  background: #1e293b; border-radius: 2px; overflow: hidden;
+.toggle-btn {
+  font-size: 12px;
+  padding: 0;
+  color: #00bfff;
 }
-.score-fill { height: 100%; background: #00bfff; border-radius: 2px; transition: width .3s; }
-.score-num { font-size: 11px; color: #00bfff; font-weight: 600; min-width: 48px; text-align: right; }
+.toggle-btn:hover {
+  color: #fff;
+}
 
-/* 分页 */
-.pagination-wrap { margin-top: 24px; display: flex; justify-content: center; }
-:deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
-  background: #00bfff !important;
+.rec-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-:deep(.el-pagination button),
-:deep(.el-pagination .el-pager li) {
-  background: #131a26 !important;
-  border: 1px solid #1e293b !important;
-  color: #94a3b8 !important;
+.score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.score-label {
+  font-size: 11px;
+  color: #475569;
+}
+.score-bar {
+  width: 80px;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.score-fill {
+  height: 100%;
+  background: #00bfff;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.score-num {
+  font-size: 11px;
+  color: #00bfff;
+  font-weight: 600;
+  min-width: 48px;
+  text-align: right;
+}
+.pagination-wrap {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
 }
 </style>

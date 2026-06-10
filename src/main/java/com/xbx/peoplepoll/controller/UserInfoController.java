@@ -46,7 +46,7 @@ public class UserInfoController {
     // 在 UserInfoController 中添加
     @GetMapping("/userInfo/ai-analysis/{userID}")
     public Result getAiAnalysis(@PathVariable String userID) {
-        // 1. 调用 Service 层，Service 负责封装 Prompt、调用 DeepSeek 并返回结果
+        // 调用 Service 层，Service 负责封装 Prompt、调用 DeepSeek 并返回结果
         AiAnalysisDTO aiAnalysisDTO = userInfoService.getAiAnalysisResult(userID);
         return Result.success(aiAnalysisDTO);
     }
